@@ -38,12 +38,9 @@
                 <div class="coctel-info">
                     <h2>@drink.Nombre</h2>
                     <p class="Instrucciones" id="Instrucciones"></p>
-                    <div>
-                        <a class="btn btn-mr-2">Favorito <i class="fa-solid fa-heart fa-beat" style="--fa-beat-scale"></i></a> 
-                    </div>
+                    <a class="btn-outline-danger" onclick="favoritos_localstorage('@drink.Nombre')"><i class="fa-solid fa-heart fa-beat" style="--fa-beat-scale"></i></a>
                 </div>
             </div>
-
         }
     </div> 
 
@@ -117,7 +114,10 @@ cocteles.forEach(coctel => {
     tarjetaAbierta = coctel;
   });
 });
-
-
+        function favoritos_localstorage(favoritos_localstorage) {
+            
+            var nombreDrink = (favoritos_localstorage);
+            localStorage.setItem("Favoritos", nombreDrink);
+        }
 </script>
 }
