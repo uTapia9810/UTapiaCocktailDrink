@@ -1,0 +1,123 @@
+﻿@model Clase_Abstracta.Models.Drink
+<link rel="stylesheet" href="~/css//style2.css" />
+<h2>Cocteles</h2>
+<h5>De click sobre algun coctel para revisar sus instrucciones de preparación</h5>
+<hr />
+@using (Html.BeginForm("Index", "Cocktail", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    <div class="row">
+
+        <div class="col-md-6 text-center align-middle">
+            <div class="input-group mb-3">
+                <span class="input-group-text"><i class="fa-solid fa-martini-glass"></i></span>
+                <input type="text" class="form-control" name="nombre" placeholder="Ingrese un nombre o ingrediente">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="input-group mb-3" id="buscar">
+                <span class="input-group-text"><i class="fa-solid fa-magnifying-glass"></i></span>
+                <input type="submit" value="Buscar" class="btn btn-success" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <h5>@ViewBag.Mensaje</h5>
+        </div>
+    </div>
+
+}@if (Model.Drinks != null)
+{
+    <div class="card-container">
+        @foreach (Clase_Abstracta.Models.Drink drink in Model.Drinks)
+        {
+
+
+            <div class="coctel-card" onclick="ConsultarDetalle('@drink.IdDrink')" >
+                <img src="@drink.Imagen" alt="Nombre del Coctel">
+                <div class="coctel-info">
+                    <h2>@drink.Nombre</h2>
+                    <p class="Instrucciones" id="Instrucciones"></p>
+                    <div>
+                        <a class="btn btn-mr-2">Favorito <i class="fa-solid fa-heart fa-beat" style="--fa-beat-scale"></i></a> 
+                    </div>
+                </div>
+            </div>
+
+        }
+    </div> 
+
+}
+else
+{
+    <div>
+        <h2 class="text-center">!Ups, al parecer no hay Cocteles que coincidan con tu busqueda</h2>
+
+    </div>
+}
+@section Scripts{
+<script type="text/javascript">
+
+            $(document).ready(function Animar(){
+                $('#buscar').hover(function(){
+                    $('#buscar').addClass('fa-bounce');
+                },
+                function(){
+                    $('#buscar').removeClass('fa-bounce');
+                });
+            });
+
+
+const cocteles = document.querySelectorAll('.coctel-card');
+let tarjetaAbierta = null;
+
+cocteles.forEach(coctel => {
+  coctel.addEventListener('click', () => {
+    if (tarjetaAbierta !== null && tarjetaAbierta !== coctel) {
+      tarjetaAbierta.classList.remove('mostrar-descripcion');
+      tarjetaAbierta.querySelector('.Instrucciones').style.display = 'none';
+    }
+
+    const instrucciones = coctel.querySelector('.Instrucciones');
+
+    if (instrucciones.innerHTML !== '') {
+      coctel.classList.toggle('mostrar-descripcion');
+      instrucciones.style.display = 'block';
+    } else {
+      instrucciones.innerHTML = '<p>Cargando...</p>';
+
+      $.ajax({
+        url: "/Cocktail/ConsultarDetalle",
+        type: "GET",
+        data: { idCoctel: coctel.getAttribute('onclick').match(/\d+/)[0] },
+        success: function(response){
+         var coctel = JSON.parse(response);
+           var ingredientesStr = '';
+  for (var i = 1; i <= 15; i++) {
+    var ingrediente = coctel.drinks[0]['strIngredient'+i];
+    if (ingrediente) {
+      ingredientesStr += '<img src="https://www.thecocktaildb.com/images/ingredients/'+ingrediente+'-Small.png" alt="'+ingrediente+'" width="20" height="20">' + coctel.drinks[0]['strIngredient'+i] + ' ' +  coctel.drinks[0]['strMeasure'+i] + ', ';
+    }
+  }
+  ingredientesStr = ingredientesStr.slice(0, -2);
+  instrucciones.innerHTML = "Ingredientes: " + ingredientesStr + "<br>" + coctel.drinks[0].strInstructions;
+  
+  coctel.classList.add('mostrar-descripcion');
+  instrucciones.style.display = 'block';
+
+  tarjetaAbierta = coctel;
+        },
+        error: function(xhr, textStatus, errorThrown){
+          instrucciones.innerHTML = '<p>Ha ocurrido un error al cargar las instrucciones.</p>';
+          console.log(textStatus);
+        }
+      });
+    }
+
+    tarjetaAbierta = coctel;
+  });
+});
+
+
+</script>
+}
